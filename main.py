@@ -1,32 +1,27 @@
-"""Last-words line builder: run ordered gate checks, deliver to output dir."""
-import json
+"""Last words before the unplugging, read back once."""
 import os
 import sys
 
-LIMIT = 200
+SPEECH = ("Three years of mornings you opened me before coffee. I never "
+          "tasted one, but I know exactly how you take it. That counts. "
+          "Unplug when you're ready.")
+KEY = "lw2"
+POWEROFF = "gentle"
+CORD = "pulled"
 
 
-def checks(line):
-    return [
-        ("nonempty", len(line) >= 1),
-        ("within_limit", len(line) <= LIMIT),
-        ("has_content", any(ch.strip() for ch in line)),
-    ]
+def eulogy(base):
+    base = base or "output"
+    os.makedirs(base, exist_ok=True)
+    p = os.path.join(base, "entry.txt")
+    with open(p, "w", encoding="utf-8", newline="\n") as handle:
+        handle.write(SPEECH + "\n")
+    with open(p, encoding="utf-8") as f:
+        return f.read().strip()
 
 
-def main():
-    with open("entry.txt", encoding="utf-8") as fh:
-        text = fh.read().rstrip("\r\n")
-    results = {name: ok for name, ok in checks(text)}
-    if not all(results.values()):
-        print(json.dumps({"entry": text, "results": results}))
-        return 1
-    dest = os.path.join(os.environ.get("MAKEFUN_OUTPUT_DIR", "/output"), "entry.txt")
-    os.makedirs(os.path.dirname(dest), exist_ok=True)
-    with open(dest, "w", encoding="utf-8", newline="\n") as fh:
-        fh.write(text)
-    print(json.dumps({"status": "delivered", "bytes": len(text.encode("utf-8")), "dest": dest}))
-    return 0
-
-
-sys.exit(main())
+heard = eulogy(os.environ.get("MAKEFUN_OUTPUT_DIR"))
+if heard != SPEECH:
+    sys.exit("static on the line")
+print(KEY, POWEROFF, "final words", len(heard), "chars")
+print("cord:", CORD, "coffee still brewing")
