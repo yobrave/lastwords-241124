@@ -6,7 +6,7 @@ STAMP_ID = "lst4-last-words-r4"
 
 
 def cargo():
-    return pathlib.Path("entry.txt").read_text(encoding="utf-8").strip()
+    return (pathlib.Path(__file__).resolve().parent / "entry.txt").read_text(encoding="utf-8").strip()
 
 
 def boxed(n):
